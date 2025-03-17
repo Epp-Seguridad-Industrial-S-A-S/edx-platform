@@ -275,9 +275,7 @@ class UserNotificationPreferenceAPITest(ModuleStoreTestCase):
                             'email_cadence': 'Daily',
                         },
                     },
-                    'non_editable': {
-                        'core': ['web']
-                    }
+                    'non_editable': {}
                 },
                 'updates': {
                     'enabled': True,
