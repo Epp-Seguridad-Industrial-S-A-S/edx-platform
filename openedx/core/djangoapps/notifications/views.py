@@ -17,7 +17,7 @@ from rest_framework.generics import UpdateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from common.djangoapps.student.models import CourseEnrollment, CourseAccessRole
+from common.djangoapps.student.models import CourseEnrollment
 from openedx.core.djangoapps.notifications.email.utils import update_user_preferences_from_patch
 from openedx.core.djangoapps.notifications.models import get_course_notification_preference_config_version
 from openedx.core.djangoapps.notifications.permissions import allow_any_authenticated_user
