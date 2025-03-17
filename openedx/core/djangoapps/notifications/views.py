@@ -17,7 +17,7 @@ from rest_framework.generics import UpdateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from common.djangoapps.student.models import CourseEnrollment
+from common.djangoapps.student.models import CourseEnrollment, CourseAccessRole
 from openedx.core.djangoapps.notifications.email.utils import update_user_preferences_from_patch
 from openedx.core.djangoapps.notifications.models import get_course_notification_preference_config_version
 from openedx.core.djangoapps.notifications.permissions import allow_any_authenticated_user
@@ -39,7 +39,8 @@ from .serializers import (
     UserNotificationPreferenceUpdateAllSerializer,
     UserNotificationPreferenceUpdateSerializer
 )
-from .utils import get_is_new_notification_view_enabled, get_show_notifications_tray, aggregate_notification_configs
+from .utils import get_is_new_notification_view_enabled, get_show_notifications_tray, aggregate_notification_configs, \
+    filter_out_visible_preferences_by_course_ids
 
 
 @allow_any_authenticated_user()
@@ -587,6 +588,11 @@ class AggregatedNotificationPreferences(APIView):
         notification_configs = notification_preferences.values_list('notification_preference_config', flat=True)
         notification_configs = aggregate_notification_configs(
             notification_configs
+        )
+        filter_out_visible_preferences_by_course_ids(
+            request.user,
+            notification_configs,
+            notification_preferences.values_list('course_id', flat=True),
         )
         notification_preferences_viewed_event(request)
         return Response({
