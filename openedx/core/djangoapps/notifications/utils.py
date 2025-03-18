@@ -276,7 +276,7 @@ def filter_out_visible_preferences_by_course_ids(user, preferences: Dict, course
     Filter out notifications visible to forum roles from user preferences.
     """
     forum_roles = Role.objects.filter(users__id=user.id).values_list('name', flat=True)
-    course_roll = CourseAccessRole.objects.filter(
+    course_roles = CourseAccessRole.objects.filter(
         user=user,
         course_id__in=course_ids
     ).values_list('role', flat=True)
@@ -285,5 +285,5 @@ def filter_out_visible_preferences_by_course_ids(user, preferences: Dict, course
         preferences,
         notification_types_with_visibility,
         forum_roles,
-        course_roll
+        course_roles
     )
