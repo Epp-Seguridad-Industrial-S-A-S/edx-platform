@@ -36,7 +36,10 @@ accomplished, or to one day celebrate its completion.
 
 Additionally, it has been decided to preemptively remove ESLint. This will
 ensure that engineers can stay focused on higher priority work, rather than
-spending time fixing linting issues in JavaScript that will simply be removed
+spending time fixing linting issues in JavaScript that will simply be removed.
+This removal is important because github has started posting these violations
+in github comments that make this work seem like a priority. At the very least,
+these are annoying messages that clutter up PRs.
 
 Consequences
 ************
