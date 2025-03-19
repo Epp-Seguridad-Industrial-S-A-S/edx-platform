@@ -30,6 +30,7 @@ from openedx.core.djangoapps.django_comment_common.models import (
     FORUM_ROLE_MODERATOR
 )
 from openedx.core.djangoapps.notifications.config.waffle import ENABLE_NOTIFICATIONS
+from openedx.core.djangoapps.notifications.email import ONE_CLICK_EMAIL_UNSUB_KEY
 from openedx.core.djangoapps.notifications.email.utils import encrypt_object, encrypt_string
 from openedx.core.djangoapps.notifications.models import (
     CourseNotificationPreference,
@@ -37,6 +38,8 @@ from openedx.core.djangoapps.notifications.models import (
     get_course_notification_preference_config_version
 )
 from openedx.core.djangoapps.notifications.serializers import NotificationCourseEnrollmentSerializer
+from openedx.core.djangoapps.user_api.models import UserPreference
+from openedx.core.djangoapps.notifications.email.utils import update_user_preferences_from_patch
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
@@ -172,6 +175,61 @@ class CourseEnrollmentPostSaveTest(ModuleStoreTestCase):
 
         self.assertEqual(notification_preferences.count(), 1)
         self.assertEqual(notification_preferences[0].user, self.user)
+
+    def test_one_click_unsubscribed_user_course_enrollment_post_save(self):
+        """
+        Test the post_save signal for CourseEnrollment for user with one-click unsubscribe.
+        """
+        UserPreference.objects.create(user_id=self.user.id, key=ONE_CLICK_EMAIL_UNSUB_KEY)
+        enrollment_data = CourseEnrollmentData(
+            user=UserData(
+                pii=UserPersonalData(
+                    username=self.user.username,
+                    email=self.user.email,
+                    name=self.user.profile.name,
+                ),
+                id=self.user.id,
+                is_active=self.user.is_active,
+            ),
+            course=CourseData(
+                course_key=self.course.id,
+                display_name=self.course.display_name,
+            ),
+            mode=self.course_enrollment.mode,
+            is_active=self.course_enrollment.is_active,
+            creation_date=self.course_enrollment.created,
+        )
+        COURSE_ENROLLMENT_CREATED.send_event(
+            enrollment=enrollment_data
+        )
+
+        notification_preferences = CourseNotificationPreference.objects.all()
+
+        self.assertEqual(notification_preferences.count(), 1)
+        self.assertEqual(notification_preferences[0].user, self.user)
+
+        email_preferences = [
+            notification["email"]
+            for app in notification_preferences[0].notification_preference_config.values()
+            for notification in app["notification_types"].values()
+        ]
+
+        self.assertEqual(email_preferences, [False] * len(email_preferences))
+
+    def test_no_course_preference_created_for_inactive_enrollments_on_unsub(self):
+        """
+        Test that unsubscribing does not create new course preferences for inactive enrollments.
+        """
+        self.course_enrollment.is_active = False
+        self.course_enrollment.save()
+        encrypted_username = encrypt_string(self.user.username)
+        encrypted_patch = encrypt_object({
+            'channel': 'email',
+            'value': False
+        })
+        update_user_preferences_from_patch(encrypted_username, encrypted_patch)
+
+        self.assertEqual(CourseNotificationPreference.objects.all().count(), 0)
 
 
 @override_waffle_flag(ENABLE_NOTIFICATIONS, active=True)
@@ -472,6 +530,21 @@ class UserNotificationPreferenceAPITest(ModuleStoreTestCase):
         for notification_app, app_prefs in default_prefs.items():
             for _, type_prefs in app_prefs.get('notification_types', {}).items():
                 assert 'info' not in type_prefs.keys()
+
+    def test_unsub_user_preferences_removed_on_email_enable(self):
+        """
+        Test unsub user preferences removed on email enable.
+        """
+        UserPreference.objects.create(user=self.user, key=ONE_CLICK_EMAIL_UNSUB_KEY)
+        self.client.login(username=self.user.username, password=self.TEST_PASSWORD)
+        payload = {
+            'notification_app': 'discussion',
+            'notification_type': 'core',
+            'notification_channel': 'email',
+            'value': True
+        }
+        self.client.patch(self.path, json.dumps(payload), content_type='application/json')
+        self.assertEqual(UserPreference.objects.count(), 0)
 
 
 @ddt.ddt
