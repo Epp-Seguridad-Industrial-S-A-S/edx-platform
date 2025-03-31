@@ -5,6 +5,7 @@ from typing import Dict
 from django.contrib.auth import get_user_model
 from edx_api_doc_tools import path_parameter, schema
 from edx_django_utils.plugins import PluginError
+from django.utils.translation import gettext as _
 from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication
 from edx_rest_framework_extensions.auth.session.authentication import SessionAuthenticationAllowInactiveUser
 from opaque_keys.edx.keys import CourseKey
@@ -66,8 +67,8 @@ class CourseAppSerializer(serializers.Serializer):  # pylint: disable=abstract-m
         data = {
             "id": instance.app_id,
             "enabled": app_status.get(instance.app_id, is_course_app_enabled(course_key, instance.app_id)),
-            "name": instance.name,
-            "description": instance.description,
+            "name": _(instance.name),
+            "description": _(instance.description),
             "allowed_operations": instance.get_allowed_operations(course_key, request.user),
             "documentation_links": instance.documentation_links,
         }
