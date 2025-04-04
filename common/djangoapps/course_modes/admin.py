@@ -194,13 +194,13 @@ class CourseModeAdmin(admin.ModelAdmin):
         'mode_display_name',
         'min_price',
         'currency',
-        '_expiration_datetime',
-        'expiration_datetime_is_explicit',
-        'verification_deadline',
-        'sku',
-        'android_sku',
-        'ios_sku',
-        'bulk_sku'
+        # '_expiration_datetime',
+        # 'expiration_datetime_is_explicit',
+        # 'verification_deadline',
+        # 'sku',
+        # 'android_sku',
+        # 'ios_sku',
+        # 'bulk_sku'
     )
 
     search_fields = ('course__id',)
@@ -210,11 +210,12 @@ class CourseModeAdmin(admin.ModelAdmin):
         'course',
         'mode_slug',
         'min_price',
-        'expiration_datetime_custom',
-        'sku',
-        'android_sku',
-        'ios_sku',
-        'bulk_sku'
+        'currency',
+        # 'expiration_datetime_custom',
+        # 'sku',
+        # 'android_sku',
+        # 'ios_sku',
+        # 'bulk_sku'
     )
 
     def expiration_datetime_custom(self, obj):
