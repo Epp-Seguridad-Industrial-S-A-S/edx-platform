@@ -27,7 +27,7 @@ from django.core.exceptions import ImproperlyConfigured
 from edx_django_utils.plugins import add_plugins
 from openedx_events.event_bus import merge_producer_configs
 from path import Path as path
-
+from django.utils.translation import gettext_lazy as _
 from openedx.core.djangoapps.plugins.constants import ProjectType, SettingsType
 from openedx.core.lib.derived import derive_settings
 from openedx.core.lib.logsettings import get_logger_config
