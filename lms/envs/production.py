@@ -1131,3 +1131,25 @@ BEAMER_PRODUCT_ID = ENV_TOKENS.get('BEAMER_PRODUCT_ID', BEAMER_PRODUCT_ID)
 # .. for now it wil impact country listing in auth flow and user profile.
 # .. eg ['US', 'CA']
 DISABLED_COUNTRIES = ENV_TOKENS.get('DISABLED_COUNTRIES', [])
+
+# Added by Mahendra
+########################## Course Discovery #######################
+LANGUAGE_MAP = {
+    'terms': dict(ALL_LANGUAGES),
+    'name': _('Language'),
+}
+COURSE_DISCOVERY_MEANINGS = {
+    'org': {
+        'name': _('Organization'),
+    },
+    'modes': {
+        'name': _('Course Type'),
+        'terms': {
+            'honor': 'Honor',
+            'verified': 'Verified',
+        },
+    },
+    'language': LANGUAGE_MAP,
+}
+COURSE_DISCOVERY_FILTERS = ["org", "language", "modes"]
+
